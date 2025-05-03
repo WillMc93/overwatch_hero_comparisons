@@ -63,6 +63,7 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
 
     # Loop through the urls
     for name, url in df[['name', 'url']].values:
+        print(name)
 
         if name == 'D.Va':
             # # Handle D.Va separately
