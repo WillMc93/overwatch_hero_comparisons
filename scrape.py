@@ -111,7 +111,11 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
 
     return pd.DataFrame(data)
 
-
+def _handle_dva(row: pd.Series) -> pd.DataFrame:
+    """
+    Split D.Va into pilot and mech rows
+    """
+    pass
 
 def _handle_tank_health(health_raw: BeautifulSoup) -> dict:
     """
