@@ -48,6 +48,56 @@ def get_roster() -> pd.DataFrame:
     return df
 
 
+def get_hero_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Get the hero data from the wiki.
+    """
+    # Create a list to hold the data
+    data = []
+
+    #re_tank_healths = re.compile(r'(?P<open_queue>\d+)\s+\(open queue)(?:\s*\+\s*(?P<armor>\d+))?')
+
+    # Loop through the urls
+    for name, url in df[['name', 'url']].values:
+
+        if name == 'D.Va':
+            # # Handle D.Va separately
+            # row = df[df['name'] == name]
+            # row = _handle_dva(row)
+            # data.append(row)
+            continue
+
+        # Get the page
+        url = f'{BASE_URL}{url}'
+        page = requests.get(url, timeout=5)
+        time.sleep(2) # Be nice to the server
+        if page.status_code != 200:
+            raise Exception(f"Failed to load page: {url}")
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        # Find role
+        role = soup.find('a', class_='mw-redirect', title=lambda x: x in ['Tank', 'Damage', 'Support'])
+        if role is None:
+            raise Exception(f"Failed to find role: {url}")
+        role = role['title']
+        print(role)
+
+
+        # Find health
+        health_div = soup.find('div', string='Health')
+        if health_div is None:
+            raise Exception(f"Failed to find health div: {url}")
+        health = health_div.parent.find_next_sibling('td')
+        print(health)
+
+        # Find the ability divs
+        # ability_divs = soup.find_all('div', {'class': 'ability-details'})
+
+
+    df = pd.concat([df, pd.DataFrame(data)], axis=1)
+
+
+    return pd.DataFrame(data)
 # %% Main
 if __name__ == "__main__":
     df = get_roster()
