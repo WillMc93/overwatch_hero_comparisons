@@ -87,13 +87,20 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
         role = role['title']
         print(role)
 
-
         # Find health
         health_div = soup.find('div', string='Health')
         if health_div is None:
             raise Exception(f"Failed to find health div: {url}")
-        health = health_div.parent.find_next_sibling('td')
-        print(health)
+        health_raw = health_div.parent.find_next_sibling('td')
+        if role == 'Tank':
+            healths = _handle_tank_health(health_raw)
+        else:
+            health = health_raw.text.strip()
+            assert len(health) in [2,3], f"Failed to parse {name} health: {health_raw}"
+            healths = {'open_queue': health, 'role_queue': health, '6v6': health}
+
+        print(healths)
+
 
         # Find the ability divs
         # ability_divs = soup.find_all('div', {'class': 'ability-details'})
@@ -103,6 +110,33 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
 
 
     return pd.DataFrame(data)
+
+
+
+def _handle_tank_health(health_raw: BeautifulSoup) -> dict:
+    """
+    Handle the tank health string.
+    """
+    health = health_raw.stripped_strings
+    healths = {'open_queue': None, 'role_queue': None, '6v6': None}
+    for h in health:
+        h = h.lower()
+        if 'open queue' in h:
+            healths['open_queue'] = h.split(' ')[0]
+        elif 'role queue' in h:
+            healths['role_queue'] = h.split(' ')[0]
+        elif '6v6' in h:
+            healths['6v6'] = h.split(' ')[0]
+        else:
+            raise Exception(f"Failed to parse health_raw string: {health_raw}")
+
+    if healths['6v6'] is None:
+        healths['6v6'] = healths['open_queue']
+
+    return healths
+
+
 # %% Main
 if __name__ == "__main__":
     df = get_roster()
+    df = get_hero_data(df)
