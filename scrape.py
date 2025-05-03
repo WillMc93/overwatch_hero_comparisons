@@ -48,7 +48,7 @@ def get_roster() -> pd.DataFrame:
     return df
 
 
-def get_hero_data(df: pd.DataFrame) -> pd.DataFrame:
+def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
     """
     Get the hero data from the wiki.
     """
@@ -56,6 +56,10 @@ def get_hero_data(df: pd.DataFrame) -> pd.DataFrame:
     data = []
 
     #re_tank_healths = re.compile(r'(?P<open_queue>\d+)\s+\(open queue)(?:\s*\+\s*(?P<armor>\d+))?')
+
+    # DEBUG: Jump to some non tank heroes (pick one's with different health, armor, and shield values)
+    if squishy_test:
+        df = df[df['name'].isin(['Mei', 'Tracer', 'Cassidy', 'Widowmaker', 'Zenyatta', 'Torbjörn', 'Bastion'])]
 
     # Loop through the urls
     for name, url in df[['name', 'url']].values:
