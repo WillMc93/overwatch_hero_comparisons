@@ -1,5 +1,6 @@
 # %% Imports
 # Std Lib
+import re
 import time
 
 # PyPI
@@ -55,8 +56,6 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
     # Create a list to hold the data
     data = []
 
-    #re_tank_healths = re.compile(r'(?P<open_queue>\d+)\s+\(open queue)(?:\s*\+\s*(?P<armor>\d+))?')
-
     # DEBUG: Jump to some non tank heroes (pick one's with different health, armor, and shield values)
     if squishy_test:
         df = df[df['name'].isin(['Mei', 'Tracer', 'Cassidy', 'Widowmaker', 'Zenyatta', 'Torbjörn', 'Bastion'])]
@@ -93,18 +92,37 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
             raise Exception(f"Failed to find health div: {url}")
         health_raw = health_div.parent.find_next_sibling('td')
         if role == 'Tank':
-            healths = _handle_tank_health(health_raw)
+            healths = _handle_tank_HAS(health_raw)
         else:
             health = health_raw.text.strip()
             assert len(health) in [2,3], f"Failed to parse {name} health: {health_raw}"
             healths = {'open_queue': health, 'role_queue': health, '6v6': health}
 
-        print(healths)
+        print(f"Healths: {healths}")
 
+        # Find armor
+        armor_div = soup.find('div', string='Armor')
+        armor_raw = armor_div.parent.find_next_sibling('td') if armor_div else None
+        if armor_raw and role == 'Tank':
+            armors = _handle_tank_HAS(armor_raw)
+        elif armor_raw:
+            armor = armor_raw.text.strip()
+            assert len(armor) in [2,3], f"Failed to parse {name} armor: {armor_raw}"
+            armors = {'open_queue': armor, 'role_queue': armor, '6v6': armor}
+        if armor_raw:
+            print(f"Armors: {armors}")
 
-        # Find the ability divs
-        # ability_divs = soup.find_all('div', {'class': 'ability-details'})
-
+        # Find shield
+        shield_div = soup.find('div', string='Shields')
+        shield_raw = shield_div.parent.find_next_sibling('td') if shield_div else None
+        if shield_raw and role == 'Tank':
+            shields = _handle_tank_HAS(shield_raw)
+        elif shield_raw:
+            shield = shield_raw.text.strip()
+            assert len(shield) in [2,3], f"Failed to parse {name} shield: {shield_raw}"
+            shields = {'open_queue': shield, 'role_queue': shield, '6v6': shield}
+        if shield_raw:
+            print(f"Shields: {shields}")
 
     df = pd.concat([df, pd.DataFrame(data)], axis=1)
 
@@ -117,9 +135,9 @@ def _handle_dva(row: pd.Series) -> pd.DataFrame:
     """
     pass
 
-def _handle_tank_health(health_raw: BeautifulSoup) -> dict:
+def _handle_tank_HAS(health_raw: BeautifulSoup) -> dict:
     """
-    Handle the tank health string.
+    Handle the tank health/armor/shield values
     """
     health = health_raw.stripped_strings
     healths = {'open_queue': None, 'role_queue': None, '6v6': None}
@@ -131,6 +149,10 @@ def _handle_tank_health(health_raw: BeautifulSoup) -> dict:
             healths['role_queue'] = h.split(' ')[0]
         elif '6v6' in h:
             healths['6v6'] = h.split(' ')[0]
+        elif re.match(r'^\d+$', h):
+            healths['open_queue'] = h
+            healths['role_queue'] = h
+            healths['6v6'] = h
         else:
             raise Exception(f"Failed to parse health_raw string: {health_raw}")
 
@@ -138,6 +160,7 @@ def _handle_tank_health(health_raw: BeautifulSoup) -> dict:
         healths['6v6'] = healths['open_queue']
 
     return healths
+
 
 
 # %% Main
