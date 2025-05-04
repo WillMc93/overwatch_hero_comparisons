@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 BASE_URL = 'https://overwatch.fandom.com/'
 ROSTER_URL = f'{BASE_URL}/wiki/Template:Heroes'
 
+
 # %% Functions
 def get_roster() -> pd.DataFrame:
     """
@@ -126,14 +127,15 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
 
     df = pd.concat([df, pd.DataFrame(data)], axis=1)
 
-
     return pd.DataFrame(data)
+
 
 def _handle_dva(row: pd.Series) -> pd.DataFrame:
     """
     Split D.Va into pilot and mech rows
     """
     pass
+
 
 def _handle_tank_HAS(health_raw: BeautifulSoup) -> dict:
     """
@@ -160,7 +162,6 @@ def _handle_tank_HAS(health_raw: BeautifulSoup) -> dict:
         healths['6v6'] = healths['open_queue']
 
     return healths
-
 
 
 # %% Main
