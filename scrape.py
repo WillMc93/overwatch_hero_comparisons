@@ -137,31 +137,35 @@ def _handle_dva(row: pd.Series) -> pd.DataFrame:
     pass
 
 
-def _handle_tank_HAS(health_raw: BeautifulSoup) -> dict:
+def _handle_tank_HAS(has_element_raw: BeautifulSoup) -> dict:
     """
     Handle the tank health/armor/shield values
+
+    @param has_element_raw: The raw health/armor/shield soup tree
     """
-    health = health_raw.stripped_strings
-    healths = {'open_queue': None, 'role_queue': None, '6v6': None}
-    for h in health:
+    has_element = has_element_raw.stripped_strings
+    hass = {'open_queue': None, 'role_queue': None, '6v6': None}
+    for h in has_element:
         h = h.lower()
         if 'open queue' in h:
-            healths['open_queue'] = h.split(' ')[0]
+            hass['open_queue'] = h.split(' ')[0]
         elif 'role queue' in h:
-            healths['role_queue'] = h.split(' ')[0]
+            hass['role_queue'] = h.split(' ')[0]
         elif '6v6' in h:
-            healths['6v6'] = h.split(' ')[0]
+            hass['6v6'] = h.split(' ')[0]
+        elif 'pilot form' in h:
+            hass['pilot'] = h.split(' ')[0]
         elif re.match(r'^\d+$', h):
-            healths['open_queue'] = h
-            healths['role_queue'] = h
-            healths['6v6'] = h
+            hass['open_queue'] = h
+            hass['role_queue'] = h
+            hass['6v6'] = h
         else:
-            raise Exception(f"Failed to parse health_raw string: {health_raw}")
+            raise Exception(f"Failed to parse health_raw string: {has_element_raw}")
 
-    if healths['6v6'] is None:
-        healths['6v6'] = healths['open_queue']
+    if hass['6v6'] is None:
+        hass['6v6'] = hass['open_queue']
 
-    return healths
+    return hass
 
 
 # %% Main
