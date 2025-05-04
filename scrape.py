@@ -61,7 +61,7 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
     if squishy_test:
         df = df[df['name'].isin(['Mei', 'Tracer', 'Cassidy', 'Widowmaker', 'Zenyatta', 'Torbjörn', 'Bastion'])]
 
-    # Loop through the urls
+    # Gather the data at the hero pages
     for name, url in df[['name', 'url']].values:
         print(name)
 
@@ -95,6 +95,7 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
         print(f"Healths: {healths}")
 
         # Find armor
+        armors = {}
         armor_div = soup.find('div', string='Armor')
         armor_raw = armor_div.parent.find_next_sibling('td') if armor_div else None
         if armor_raw and role == 'Tank':
@@ -107,6 +108,7 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
             print(f"Armors: {armors}")
 
         # Find shield
+        shields = {}
         shield_div = soup.find('div', string='Shields')
         shield_raw = shield_div.parent.find_next_sibling('td') if shield_div else None
         if shield_raw and role == 'Tank':
@@ -117,6 +119,10 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
             shields = {'open_queue': shield, 'role_queue': shield, '6v6': shield}
         if shield_raw:
             print(f"Shields: {shields}")
+
+        data.append({'healths': healths, 'armors': armors, 'shields': shields})
+
+        # Find abilities
 
     df = pd.concat([df, pd.DataFrame(data)], axis=1)
 
