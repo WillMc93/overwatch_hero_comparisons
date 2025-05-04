@@ -127,7 +127,7 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
 
     df = pd.concat([df, pd.DataFrame(data)], axis=1)
 
-    return pd.DataFrame(data)
+    return df
 
 
 def _handle_dva(row: pd.Series) -> pd.DataFrame:
