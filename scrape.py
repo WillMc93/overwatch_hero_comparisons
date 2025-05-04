@@ -65,13 +65,6 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
     for name, url in df[['name', 'url']].values:
         print(name)
 
-        if name == 'D.Va':
-            # # Handle D.Va separately
-            # row = df[df['name'] == name]
-            # row = _handle_dva(row)
-            # data.append(row)
-            continue
-
         # Get the page
         url = f'{BASE_URL}{url}'
         page = requests.get(url, timeout=5)
@@ -128,13 +121,6 @@ def get_hero_data(df: pd.DataFrame, squishy_test: bool = False) -> pd.DataFrame:
     df = pd.concat([df, pd.DataFrame(data)], axis=1)
 
     return df
-
-
-def _handle_dva(row: pd.Series) -> pd.DataFrame:
-    """
-    Split D.Va into pilot and mech rows
-    """
-    pass
 
 
 def _handle_tank_HAS(has_element_raw: BeautifulSoup) -> dict:
